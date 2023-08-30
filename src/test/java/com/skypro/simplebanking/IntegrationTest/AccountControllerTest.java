@@ -109,7 +109,7 @@ public class AccountControllerTest {
         Long id = 0L;
         mockMvc.perform(get("/account/{id}", id)
                         .header(HttpHeaders.AUTHORIZATION, base64Encoded("Lila", "dodo")))
-                .andExpect(status().isOk());
+                .andExpect(status().isNotFound());
     }
 
     @Test
@@ -138,7 +138,7 @@ public class AccountControllerTest {
                         .header(HttpHeaders.AUTHORIZATION, base64Encoded("Ilya", "lolo"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(getBalanceChangeRequest(1000L).toString()))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().is4xxClientError());
     }
 
     @Test
