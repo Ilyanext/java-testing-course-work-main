@@ -1,9 +1,13 @@
 package com.skypro.simplebanking.IntegrationTest;
+
+import com.skypro.simplebanking.dto.BankingUserDetails;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+
 import javax.sql.DataSource;
 import javax.transaction.Transactional;
+
 import com.skypro.simplebanking.SimpleBankingApplication;
 import com.skypro.simplebanking.dto.UserDTO;
 import com.skypro.simplebanking.entity.User;
@@ -41,85 +45,54 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @Transactional
 @Testcontainers
-public class UserControllersTest {
-    @Autowired
-    MockMvc mockMvc;
-    @Autowired
-    public UserService userService;
-    @Autowired
-    public UserRepository userRepository;
-    @Autowired
-    public AccountRepository accountRepository;
-    @Autowired
-    private DataSource dataSource;
-
-    @Container
-    private static final PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:13")
-            .withUsername("banking")
-            .withPassword("super-safe-pass");
-
-    @DynamicPropertySource
-    static void postgresProperties(DynamicPropertyRegistry registry) {
-        registry.add("spring.datasource.url", postgres::getJdbcUrl);
-        registry.add("spring.datasource.username", postgres::getUsername);
-        registry.add("spring.datasource.password", postgres::getPassword);
-    }
-
-    @BeforeEach
-    void createUsersForRepository() {
-        userService.createUser("Ilya", "lolo");
-        userService.createUser("Dima", "lili");
-        userService.createUser("Lila", "dodo");
-    }
-
-    @AfterEach
-    void deleteToRepository() {
-        userRepository.deleteAll();
-        accountRepository.deleteAll();
-    }
+public class UserControllersTest extends IntegationTest{
 
     private String base64Encoded(String userName, String password) {
         return "Basic " + Base64Utils.encodeToString((userName + ":" + password).getBytes(StandardCharsets.UTF_8));
     }
 
     @Test
-    @WithMockUser(username = "admin", roles = "ADMIN")
     void createUser_Test() throws Exception {
-        deleteToRepository();
         JSONObject createUserRequest = new JSONObject();
         createUserRequest.put("username", "username");
         createUserRequest.put("password", "password");
         mockMvc.perform(post("/user")
+                        .header(HttpHeaders.AUTHORIZATION, base64Encoded("Ilya", "lolo"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(createUserRequest.toString()))
                 .andExpect(status().isOk());
     }
+
     @Test
-    @WithMockUser(username = "admin", roles = "ADMIN")
     void createUser_WhenUserIsExistException() throws Exception {
         JSONObject createUserRequest = new JSONObject();
         createUserRequest.put("username", "Ilya");
         createUserRequest.put("password", "lolo");
         mockMvc.perform(post("/user")
+                        .header(HttpHeaders.AUTHORIZATION, base64Encoded("Ilya", "lolo"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(createUserRequest.toString()))
                 .andExpect(status().isBadRequest());
     }
+
     @Test
-    @WithMockUser(username = "user", roles = "USER")
     void getListUsers_Test() throws Exception {
-        mockMvc.perform(get("/user/list"))
+        mockMvc.perform(get("/user/list")
+                        .header(HttpHeaders.AUTHORIZATION, base64Encoded("Ilya", "lolo")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$").isNotEmpty())
                 .andExpect(jsonPath("$.length()").value(3));
     }
+
     @Test
-    @WithMockUser(username = "admin", roles = "ADMIN")
+//    @WithMockUser(username = "admin", roles = "ADMIN")
     void getListUsers_WhenAdminTryToGet() throws Exception {
-        mockMvc.perform(get("/user/list"))
+        mockMvc.perform(get("/user/list")
+                .header(HttpHeaders.AUTHORIZATION, base64Encoded("admin", "ADMIN")))
                 .andExpect(status().isForbidden());
     }
+
     @Test
     void getMyProfile_Test() throws Exception {
         mockMvc.perform(get("/user/me")

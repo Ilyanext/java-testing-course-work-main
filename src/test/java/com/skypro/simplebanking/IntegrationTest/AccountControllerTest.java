@@ -40,52 +40,18 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @Testcontainers
-public class AccountControllerTest {
-    @Autowired
-    MockMvc mockMvc;
-    @Autowired
-    public UserService userService;
-    @Autowired
-    public AccountService accountService;
-
-    @Autowired
-    public UserRepository userRepository;
-    @Autowired
-    public AccountRepository accountRepository;
-    @Autowired
-    private DataSource dataSource;
-
-    @Container
-    private static final PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:13")
-            .withUsername("banking")
-            .withPassword("super-safe-pass");
-
-    @DynamicPropertySource
-    static void postgresProperties(DynamicPropertyRegistry registry) {
-        registry.add("spring.datasource.url", postgres::getJdbcUrl);
-        registry.add("spring.datasource.username", postgres::getUsername);
-        registry.add("spring.datasource.password", postgres::getPassword);
-    }
-
-    @BeforeEach
-    void createUsersForRepository() {
-        userService.createUser("Ilya", "lolo");
-        userService.createUser("Dima", "lili");
-        userService.createUser("Lila", "dodo");
-    }
-
-    @AfterEach
-    void deleteToRepository() {
-        userRepository.deleteAll();
-        accountRepository.deleteAll();
-    }
+public class AccountControllerTest extends IntegationTest {
 
     private JSONObject getBalanceChangeRequest(Long amount) throws JSONException {
         JSONObject balanceChangeRequest = new JSONObject();
         balanceChangeRequest.put("amount", amount);
         return balanceChangeRequest;
     }
-
+    private JSONObject getAccountCurrency(String currency) throws JSONException {
+        JSONObject accountCurrency = new JSONObject();
+        accountCurrency.put("currency", currency);
+        return accountCurrency;
+    }
     private Long getAccountId(String userName) {
         long userId = userRepository.findByUsername(userName).orElseThrow().getId();
         Collection<Account> account = accountRepository.findByUserId(userId);
@@ -131,7 +97,24 @@ public class AccountControllerTest {
                         .content(getBalanceChangeRequest(1L).toString()))
                 .andExpect(status().isNotFound());
     }
-
+    @Test
+    public void depositToAccount_WhenWrongCurrencyExeption() throws Exception {
+        Long id = 0L;
+        mockMvc.perform(post("/account/deposit/{id}", id)
+                        .header(HttpHeaders.AUTHORIZATION, base64Encoded("Dima", "lili"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(getAccountCurrency("EUR").toString()))
+                .andExpect(status().isNotFound());
+    }
+    @Test
+    public void depositToAccount_WhenInvalidAmountException() throws Exception {
+        Long id = -1L;
+        mockMvc.perform(post("/account/deposit/{id}", id)
+                        .header(HttpHeaders.AUTHORIZATION, base64Encoded("Dima", "lili"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(getBalanceChangeRequest(-1L).toString()))
+                .andExpect(status().isBadRequest());
+    }
     @Test
     public void withdrawToAccount_WhenInsufficienFunds() throws Exception {
         mockMvc.perform(post("/account/withdraw/{id}", 1)
