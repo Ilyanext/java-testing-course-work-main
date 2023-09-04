@@ -86,11 +86,13 @@ public class UserControllersTest extends IntegationTest{
     }
 
     @Test
-//    @WithMockUser(username = "admin", roles = "ADMIN")
     void getListUsers_WhenAdminTryToGet() throws Exception {
+        JSONObject createUserRequest = new JSONObject();
+        createUserRequest.put("username", "admin");
+        createUserRequest.put("password", "****");
         mockMvc.perform(get("/user/list")
-                .header(HttpHeaders.AUTHORIZATION, base64Encoded("admin", "ADMIN")))
-                .andExpect(status().isForbidden());
+                .header(HttpHeaders.AUTHORIZATION, base64Encoded("admin", "****")))
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
