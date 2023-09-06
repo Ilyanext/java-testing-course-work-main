@@ -1,5 +1,6 @@
 package com.skypro.simplebanking.IntegrationTest;
 
+import com.skypro.simplebanking.configuration.AdminSecurityFilter;
 import com.skypro.simplebanking.repository.AccountRepository;
 import com.skypro.simplebanking.repository.UserRepository;
 import com.skypro.simplebanking.service.AccountService;
@@ -48,7 +49,7 @@ public abstract class IntegationTest {
     }
 
     @BeforeEach
-    void createUsersForRepository() {
+    public void  createUsersForRepository() {
         userService.createUser("Ilya", "lolo");
         userService.createUser("Dima", "lili");
         userService.createUser("Lila", "dodo");
