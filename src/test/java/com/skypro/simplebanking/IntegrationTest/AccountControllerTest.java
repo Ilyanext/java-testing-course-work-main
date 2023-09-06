@@ -37,9 +37,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest
-@AutoConfigureMockMvc
-@Testcontainers
+
+
 public class AccountControllerTest extends IntegationTest {
 
     private JSONObject getBalanceChangeRequest(Long amount) throws JSONException {

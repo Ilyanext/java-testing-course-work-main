@@ -34,9 +34,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 
-@SpringBootTest
-@AutoConfigureMockMvc
-@Testcontainers
+
 public class TransferControllerTest extends IntegationTest{
 
     private long getAccountId(String userName) {
