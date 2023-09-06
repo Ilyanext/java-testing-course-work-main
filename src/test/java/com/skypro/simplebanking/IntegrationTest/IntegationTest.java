@@ -1,10 +1,14 @@
 package com.skypro.simplebanking.IntegrationTest;
 
-import com.skypro.simplebanking.configuration.AdminSecurityFilter;
+import com.skypro.simplebanking.dto.BankingUserDetails;
+import com.skypro.simplebanking.dto.UserDTO;
+import com.skypro.simplebanking.entity.User;
 import com.skypro.simplebanking.repository.AccountRepository;
 import com.skypro.simplebanking.repository.UserRepository;
 import com.skypro.simplebanking.service.AccountService;
 import com.skypro.simplebanking.service.UserService;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -17,6 +21,9 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import javax.sql.DataSource;
+
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -54,12 +61,20 @@ public abstract class IntegationTest {
         userService.createUser("Dima", "lili");
         userService.createUser("Lila", "dodo");
     }
+//    @BeforeAll
+//    public static void createUsersRepository()  {
+//
+//
+//    }
 
     @AfterEach
     void deleteToRepository() {
         userRepository.deleteAll();
         accountRepository.deleteAll();
-//        postgres.stop();
     }
+//    @AfterAll
+//    void  stopContainer(){
+//        postgres.stop();
+//    }
 
 }

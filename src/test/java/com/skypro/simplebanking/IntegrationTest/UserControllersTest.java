@@ -50,24 +50,23 @@ public class UserControllersTest extends IntegationTest{
     }
 
     @Test
-    void createUser_Test() throws Exception {
+    void createUser_Ok() throws Exception {
         JSONObject createUserRequest = new JSONObject();
         createUserRequest.put("username", "username");
         createUserRequest.put("password", "password");
         mockMvc.perform(post("/user")
-                        .header(HttpHeaders.AUTHORIZATION, base64Encoded("Ilya", "lolo"))
+                        .header("X-SECURITY-ADMIN-KEY", "SUPER_SECRET_KEY_FROM_ADMIN")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(createUserRequest.toString()))
                 .andExpect(status().isOk());
     }
-
     @Test
     void createUser_WhenUserIsExistException() throws Exception {
         JSONObject createUserRequest = new JSONObject();
         createUserRequest.put("username", "Ilya");
         createUserRequest.put("password", "lolo");
         mockMvc.perform(post("/user")
-                        .header(HttpHeaders.AUTHORIZATION, base64Encoded("Ilya", "lolo"))
+                        .header("X-SECURITY-ADMIN-KEY", "SUPER_SECRET_KEY_FROM_ADMIN")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(createUserRequest.toString()))
                 .andExpect(status().isBadRequest());
@@ -89,8 +88,8 @@ public class UserControllersTest extends IntegationTest{
         createUserRequest.put("username", "admin");
         createUserRequest.put("password", "****");
         mockMvc.perform(get("/user/list")
-                .header(HttpHeaders.AUTHORIZATION, base64Encoded("admin", "****")))
-                .andExpect(status().isUnauthorized());
+                .header("X-SECURITY-ADMIN-KEY", "SUPER_SECRET_KEY_FROM_ADMIN"))
+                .andExpect(status().isForbidden());
     }
 
     @Test
