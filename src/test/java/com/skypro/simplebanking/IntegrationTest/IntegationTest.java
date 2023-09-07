@@ -56,25 +56,25 @@ public abstract class IntegationTest {
     }
 
     @BeforeEach
-    public void  createUsersForRepository() {
+    public void createUsersForRepository() {
         userService.createUser("Ilya", "lolo");
         userService.createUser("Dima", "lili");
         userService.createUser("Lila", "dodo");
     }
-//    @BeforeAll
-//    public static void createUsersRepository()  {
-//
-//
-//    }
+
+    @BeforeAll
+    public static void startContainer() {
+        postgres.start();
+    }
 
     @AfterEach
     void deleteToRepository() {
         userRepository.deleteAll();
         accountRepository.deleteAll();
     }
-//    @AfterAll
-//    void  stopContainer(){
-//        postgres.stop();
-//    }
+    @AfterAll
+    public static void  stopContainer(){
+        postgres.stop();
+    }
 
 }
